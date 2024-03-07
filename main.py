@@ -65,7 +65,7 @@ def main():
 
    # Initialize NetworkTables
    nt.initialize(server='roborio-4829-frc.local')
-   visionTable = nt.getTable('Note Detection OpenCV')
+   visionTable = nt.getTable('SmartDashboard')
 
    CameraServer.startAutomaticCapture()
 
