@@ -96,7 +96,7 @@ def main():
       contour = find_largest_orange_contour(hsv_img)
       if contour is not None and contour_is_note(contour):
          cv2.ellipse(output_img, cv2.fitEllipse(contour), (255, 0, 255), 2)
-         print("Yo Note found w")
+         # print("Yo Note found w")
 
          # Extracting the center, width, and height of the ellipse
          ellipse = cv2.fitEllipse(contour)
@@ -110,13 +110,13 @@ def main():
          visionTable.putNumber('EllipseAngle', angle)
          
 
-      else:
-          print('no note found ;c;c;c;cc;')
+      # else:
+      #     print('no note found ;c;c;c;cc;')
 
       output_stream.putFrame(output_img)
 
-      if cv2.waitKey(1) & 0xFF == ord("q"):
-         break
+      # if cv2.waitKey(1) & 0xFF == ord("q"):
+      #    break
 
 
 if __name__ == "__main__":
