@@ -11,8 +11,8 @@ TEAM_NUMBER = 4829
 # Specify the camera index (usually 0 for built-in webcam)
 CAMERA_INDEX = 0
 # Define lower and upper bounds for orange color in HSV
-LOWER_ORANGE_HSV = np.array([0, 80, 80])
-UPPER_ORANGE_HSV = np.array([6, 255, 255])
+LOWER_ORANGE_HSV = np.array([0, 100, 175])
+UPPER_ORANGE_HSV = np.array([50, 255, 255])
 # The minimum contour area to detect a note
 MINIMUM_CONTOUR_AREA = 400
 # The threshold for a contour to be considered a disk
@@ -52,6 +52,27 @@ def contour_is_note(contour: np.ndarray) -> bool:
     # Returns True if the hull is almost as big as the ellipse
     return cv2.contourArea(contour_hull) / best_fit_ellipse_area > CONTOUR_DISK_THRESHOLD
 
+def get_average_hsv(hsv_image, contour):
+    """
+    Calculate the average HSV values within a contour.
+    :param hsv_image: HSV image from which to calculate HSV values
+    :param contour: Contour within which to calculate average HSV values
+    :return: Average HSV values (H, S, V) as a tuple
+    """
+    mask = np.zeros(hsv_image.shape[:2], np.uint8)
+    cv2.drawContours(mask, [contour], -1, 255, -1)
+    mean_val = cv2.mean(hsv_image, mask=mask)
+    return mean_val[:3]
+
+
+
+
+
+
+
+
+
+
 
 def main():
    with open('/boot/frc.json') as f:
@@ -61,11 +82,11 @@ def main():
    width = 640
    height = 480
 
-   nt = ntcore.NetworkTableInstance.getDefault()
+#    nt = ntcore.NetworkTableInstance.getDefault()
 
-   # Initialize NetworkTables
-   nt.initialize(server='roborio-4829-frc.local')
-   visionTable = nt.getTable('SmartDashboard')
+#    # Initialize NetworkTables
+#    nt.initialize(server='roborio-4829-frc.local')
+#    visionTable = nt.getTable('SmartDashboard')
 
    CameraServer.startAutomaticCapture()
 
@@ -77,6 +98,7 @@ def main():
 
    # Wait for NetworkTables to start
    time.sleep(0.5)
+
 
    while True:
       start_time = time.time()
@@ -91,27 +113,38 @@ def main():
 
       # Convert to HSV and threshold image
       hsv_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2HSV)
-      binary_img = cv2.inRange(hsv_img, (0, 0, 100), (85, 255, 255))
+
+
+
 
       contour = find_largest_orange_contour(hsv_img)
       if contour is not None and contour_is_note(contour):
          cv2.ellipse(output_img, cv2.fitEllipse(contour), (255, 0, 255), 2)
-         # print("Yo Note found w")
+         print("Yo Note found w")
+         average_hsv = get_average_hsv(hsv_img, contour)
+         print(f"Average HSV of detected note: H={average_hsv[0]}, S={average_hsv[1]}, V={average_hsv[2]}")
+
+
+
+
+
+
+
 
          # Extracting the center, width, and height of the ellipse
          ellipse = cv2.fitEllipse(contour)
          (x_center, y_center), (minor_axis, major_axis), angle = ellipse
          
          # Writing the extracted values to the NetworkTables
-         visionTable.putNumber('EllipseCenterX', x_center)
-         visionTable.putNumber('EllipseCenterY', y_center)
-         visionTable.putNumber('EllipseWidth', minor_axis)
-         visionTable.putNumber('EllipseHeight', major_axis)
-         visionTable.putNumber('EllipseAngle', angle)
+        #  visionTable.putNumber('EllipseCenterX', x_center)
+        #  visionTable.putNumber('EllipseCenterY', y_center)
+        #  visionTable.putNumber('EllipseWidth', minor_axis)
+        #  visionTable.putNumber('EllipseHeight', major_axis)
+        #  visionTable.putNumber('EllipseAngle', angle)
          
 
-      # else:
-      #     print('no note found ;c;c;c;cc;')
+      else:
+          print('no note found ;c;c;c;cc;')
 
       output_stream.putFrame(output_img)
 
