@@ -11,12 +11,17 @@ TEAM_NUMBER = 4829
 # Specify the camera index (usually 0 for built-in webcam)
 CAMERA_INDEX = 0
 # Define lower and upper bounds for orange color in HSV
-LOWER_ORANGE_HSV = np.array([0, 100, 175])
+LOWER_ORANGE_HSV = np.array([0, 75, 100])
 UPPER_ORANGE_HSV = np.array([50, 255, 255])
 # The minimum contour area to detect a note
 MINIMUM_CONTOUR_AREA = 400
 # The threshold for a contour to be considered a disk
-CONTOUR_DISK_THRESHOLD = 0.9
+CONTOUR_DISK_THRESHOLD = 0.8
+
+K = np.array([[258.61622011, 0., 321.31449265],
+              [0., 259.47304692, 239.98970803],
+              [0., 0., 1.]])
+D = np.array([[-0.03559349], [-0.02734489], [0.02827767], [-0.01158942]])
 
 
 def find_largest_orange_contour(hsv_image: np.ndarray) -> np.ndarray:
@@ -79,8 +84,8 @@ def main():
       config = json.load(f)
    camera = config['cameras'][0]
 
-   width = 640
-   height = 480
+   width = 320
+   height = 240
 
 #    nt = ntcore.NetworkTableInstance.getDefault()
 
@@ -124,16 +129,19 @@ def main():
          average_hsv = get_average_hsv(hsv_img, contour)
          print(f"Average HSV of detected note: H={average_hsv[0]}, S={average_hsv[1]}, V={average_hsv[2]}")
 
-
-
-
-
-
-
-
          # Extracting the center, width, and height of the ellipse
          ellipse = cv2.fitEllipse(contour)
          (x_center, y_center), (minor_axis, major_axis), angle = ellipse
+         print("x_center",x_center)
+         print("y_center",y_center)
+         print("Output image resolution: Width = {}, Height = {}".format(output_img.shape[1], output_img.shape[0]))
+
+
+
+
+
+
+
          
          # Writing the extracted values to the NetworkTables
         #  visionTable.putNumber('EllipseCenterX', x_center)
@@ -141,10 +149,7 @@ def main():
         #  visionTable.putNumber('EllipseWidth', minor_axis)
         #  visionTable.putNumber('EllipseHeight', major_axis)
         #  visionTable.putNumber('EllipseAngle', angle)
-         
-
-      else:
-          print('no note found ;c;c;c;cc;')
+        
 
       output_stream.putFrame(output_img)
 
