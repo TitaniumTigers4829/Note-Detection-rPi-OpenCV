@@ -11,12 +11,12 @@ TEAM_NUMBER = 4829
 # Specify the camera index (usually 0 for built-in webcam)
 CAMERA_INDEX = 0
 # Define lower and upper bounds for orange color in HSV
-LOWER_ORANGE_HSV = np.array([0, 75, 100])
-UPPER_ORANGE_HSV = np.array([50, 255, 255])
+LOWER_ORANGE_HSV = np.array([1, 80, 130])
+UPPER_ORANGE_HSV = np.array([20, 255, 255])
 # The minimum contour area to detect a note
-MINIMUM_CONTOUR_AREA = 400
+MINIMUM_CONTOUR_AREA = 150
 # The threshold for a contour to be considered a disk
-CONTOUR_DISK_THRESHOLD = 0.8
+CONTOUR_DISK_THRESHOLD = 0.75
 
 K = np.array([[258.61622011, 0., 321.31449265],
               [0., 259.47304692, 239.98970803],
@@ -45,6 +45,7 @@ def contour_is_note(contour: np.ndarray) -> bool:
     :param contour: the contour to check
     :return: True if the contour is shaped like a note
     """
+
     # Makes sure the contour isn't some random small spec of noise
     if cv2.contourArea(contour) < MINIMUM_CONTOUR_AREA:
         return False
@@ -123,6 +124,7 @@ def main():
 
 
       contour = find_largest_orange_contour(hsv_img)
+
       if contour is not None and contour_is_note(contour):
          cv2.ellipse(output_img, cv2.fitEllipse(contour), (255, 0, 255), 2)
          print("Yo Note found w")
