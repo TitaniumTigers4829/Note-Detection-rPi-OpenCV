@@ -127,16 +127,15 @@ def main():
 
       if contour is not None and contour_is_note(contour):
          cv2.ellipse(output_img, cv2.fitEllipse(contour), (255, 0, 255), 2)
-         print("Yo Note found w")
          average_hsv = get_average_hsv(hsv_img, contour)
-         print(f"Average HSV of detected note: H={average_hsv[0]}, S={average_hsv[1]}, V={average_hsv[2]}")
+         #print(f"Average HSV of detected note: H={average_hsv[0]}, S={average_hsv[1]}, V={average_hsv[2]}")
 
          # Extracting the center, width, and height of the ellipse
          ellipse = cv2.fitEllipse(contour)
          (x_center, y_center), (minor_axis, major_axis), angle = ellipse
-         print("x_center",x_center)
-         print("y_center",y_center)
-         print("Output image resolution: Width = {}, Height = {}".format(output_img.shape[1], output_img.shape[0]))
+        # Get data fpor the loop if "q" is pressed
+         time.sleep(1)
+         print(x_center, ", ", y_center, ", ")
 
 
 
