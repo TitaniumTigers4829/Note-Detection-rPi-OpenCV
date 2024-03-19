@@ -6,10 +6,7 @@ import json
 import numpy as np
 import time
 
-# Set your team number
-TEAM_NUMBER = 4829
-# Specify the camera index (usually 0 for built-in webcam)
-CAMERA_INDEX = 0
+
 # Define lower and upper bounds for orange color in HSV
 LOWER_ORANGE_HSV = np.array([1, 80, 130])
 UPPER_ORANGE_HSV = np.array([20, 255, 255])
@@ -17,12 +14,6 @@ UPPER_ORANGE_HSV = np.array([20, 255, 255])
 MINIMUM_CONTOUR_AREA = 150
 # The threshold for a contour to be considered a disk
 CONTOUR_DISK_THRESHOLD = 0.75
-
-K = np.array([[258.61622011, 0., 321.31449265],
-              [0., 259.47304692, 239.98970803],
-              [0., 0., 1.]])
-D = np.array([[-0.03559349], [-0.02734489], [0.02827767], [-0.01158942]])
-
 
 def find_largest_orange_contour(hsv_image: np.ndarray) -> np.ndarray:
     """
@@ -74,12 +65,6 @@ def get_average_hsv(hsv_image, contour):
 
 
 
-
-
-
-
-
-
 def main():
    with open('/boot/frc.json') as f:
       config = json.load(f)
@@ -88,11 +73,10 @@ def main():
    width = 320
    height = 240
 
-#    nt = ntcore.NetworkTableInstance.getDefault()
+   nt = ntcore.NetworkTableInstance.getDefault()
 
 #    # Initialize NetworkTables
-#    nt.initialize(server='roborio-4829-frc.local')
-#    visionTable = nt.getTable('SmartDashboard')
+   visionTable = nt.getTable('SmartDashboard')
 
    CameraServer.startAutomaticCapture()
 
@@ -120,9 +104,6 @@ def main():
       # Convert to HSV and threshold image
       hsv_img = cv2.cvtColor(input_img, cv2.COLOR_BGR2HSV)
 
-
-
-
       contour = find_largest_orange_contour(hsv_img)
 
       if contour is not None and contour_is_note(contour):
@@ -134,28 +115,15 @@ def main():
          ellipse = cv2.fitEllipse(contour)
          (x_center, y_center), (minor_axis, major_axis), angle = ellipse
         # Get data fpor the loop if "q" is pressed
-         time.sleep(1)
          print(x_center, ", ", y_center, ", ")
-
-
-
-
-
-
-
          
          # Writing the extracted values to the NetworkTables
-        #  visionTable.putNumber('EllipseCenterX', x_center)
-        #  visionTable.putNumber('EllipseCenterY', y_center)
-        #  visionTable.putNumber('EllipseWidth', minor_axis)
-        #  visionTable.putNumber('EllipseHeight', major_axis)
-        #  visionTable.putNumber('EllipseAngle', angle)
+         visionTable.putNumber('EllipseCenterX', x_center)
+         visionTable.putNumber('EllipseCenterY', y_center)
+
         
 
       output_stream.putFrame(output_img)
-
-      # if cv2.waitKey(1) & 0xFF == ord("q"):
-      #    break
 
 
 if __name__ == "__main__":
