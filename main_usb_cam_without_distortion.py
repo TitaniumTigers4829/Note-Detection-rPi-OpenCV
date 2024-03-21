@@ -74,6 +74,14 @@ def main():
    height = 240
 
    nt = ntcore.NetworkTableInstance.getDefault()
+   nt.startClient4("coprocessor")
+   nt.setServerTeam(4829)
+
+
+
+
+   
+
 
 #    # Initialize NetworkTables
    visionTable = nt.getTable('SmartDashboard')
@@ -87,7 +95,7 @@ def main():
    img = np.zeros(shape=(240, 320, 3), dtype=np.uint8)
 
    # Wait for NetworkTables to start
-   time.sleep(0.5)
+   time.sleep(1)
 
 
    while True:
