@@ -83,6 +83,9 @@ def main():
    
 
 
+   nt.startClient4("")
+   nt.setServerTeam(4829)
+
 #    # Initialize NetworkTables
    visionTable = nt.getTable('SmartDashboard')
 
