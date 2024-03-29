@@ -8,8 +8,10 @@ import time
 
 
 # Define lower and upper bounds for orange color in HSV
-LOWER_ORANGE_HSV = np.array([4, 85, 162])
-UPPER_ORANGE_HSV = np.array([17, 255, 255])
+# LOWER_ORANGE_HSV = np.array([4, 85, 162])
+# UPPER_ORANGE_HSV = np.array([17, 255, 255])
+LOWER_ORANGE_HSV = np.array([15, 0, 220])
+UPPER_ORANGE_HSV = np.array([23, 255, 255])
 # The minimum contour area to detect a note
 MINIMUM_CONTOUR_AREA = 150
 # The threshold for a contour to be considered a disk
