@@ -10,12 +10,13 @@ import time
 # Define lower and upper bounds for orange color in HSV
 # LOWER_ORANGE_HSV = np.array([4, 85, 162])
 # UPPER_ORANGE_HSV = np.array([17, 255, 255])
-LOWER_ORANGE_HSV = np.array([15, 0, 220])
-UPPER_ORANGE_HSV = np.array([23, 255, 255])
+LOWER_ORANGE_HSV = np.array([13, 41, 58])
+UPPER_ORANGE_HSV = np.array([25, 255, 255])
 # The minimum contour area to detect a note
 MINIMUM_CONTOUR_AREA = 150
+MAXIMUM_CONTOUR_AREA_FOR_CAMERA_UPPER_HALF = 1500
 # The threshold for a contour to be considered a disk
-CONTOUR_DISK_THRESHOLD = 0.75
+CONTOUR_DISK_THRESHOLD = 0.9
 
 def find_largest_orange_contour(hsv_image: np.ndarray) -> np.ndarray:
     """
@@ -32,7 +33,7 @@ def find_largest_orange_contour(hsv_image: np.ndarray) -> np.ndarray:
         return max(contours, key=cv2.contourArea)
 
 
-def contour_is_note(contour: np.ndarray) -> bool:
+def contour_is_note(contour: np.ndarray) -> list:
     """
     Checks if the contour is shaped like a note
     :param contour: the contour to check
@@ -41,7 +42,7 @@ def contour_is_note(contour: np.ndarray) -> bool:
 
     # Makes sure the contour isn't some random small spec of noise
     if cv2.contourArea(contour) < MINIMUM_CONTOUR_AREA:
-        return False
+        return [False, -2]
 
     # Gets the smallest convex polygon that can fit around the contour
     contour_hull = cv2.convexHull(contour)
@@ -49,25 +50,12 @@ def contour_is_note(contour: np.ndarray) -> bool:
     ellipse = cv2.fitEllipse(contour_hull)
     best_fit_ellipse_area = np.pi * (ellipse[1][0] / 2) * (ellipse[1][1] / 2)
     # Returns True if the hull is almost as big as the ellipse
-    return cv2.contourArea(contour_hull) / best_fit_ellipse_area > CONTOUR_DISK_THRESHOLD
-
-def get_average_hsv(hsv_image, contour):
-    """
-    Calculate the average HSV values within a contour.
-    :param hsv_image: HSV image from which to calculate HSV values
-    :param contour: Contour within which to calculate average HSV values
-    :return: Average HSV values (H, S, V) as a tuple
-    """
-    mask = np.zeros(hsv_image.shape[:2], np.uint8)
-    cv2.drawContours(mask, [contour], -1, 255, -1)
-    mean_val = cv2.mean(hsv_image, mask=mask)
-    return mean_val[:3]
-
-
-
+    print(cv2.contourArea(contour_hull))
+    return [cv2.contourArea(contour_hull) / best_fit_ellipse_area > CONTOUR_DISK_THRESHOLD, cv2.contourArea(contour_hull)]
 
 
 def main():
+   #define camera settings
    with open('/boot/frc.json') as f:
       config = json.load(f)
    camera = config['cameras'][0]
@@ -75,6 +63,7 @@ def main():
    width = 320
    height = 240
 
+   #instantiate network tables
    nt = ntcore.NetworkTableInstance.getDefault()
    nt.startClient4("coprocessor")
    nt.setServerTeam(4829)
@@ -83,9 +72,11 @@ def main():
 #    # Initialize NetworkTables
    visionTable = nt.getTable('SmartDashboard')
 
+#start capture
    CameraServer.startAutomaticCapture()
 
    input_stream = CameraServer.getVideo()
+   #mirror input stream to output with ellipse
    output_stream = CameraServer.putVideo('Processed', width, height)
 
    # Allocating new images is very expensive, always try to preallocate
@@ -97,7 +88,7 @@ def main():
 
    while True:
       start_time = time.time()
-
+      #capture frame
       frame_time, input_img = input_stream.grabFrame(img)
       output_img = np.copy(input_img)
 
@@ -111,23 +102,25 @@ def main():
 
       contour = find_largest_orange_contour(hsv_img)
 
-      if contour is not None and contour_is_note(contour):
+      if contour is not None and contour_is_note(contour)[0]:
          cv2.ellipse(output_img, cv2.fitEllipse(contour), (255, 0, 255), 2)
-         average_hsv = get_average_hsv(hsv_img, contour)
-         #print(f"Average HSV of detected note: H={average_hsv[0]}, S={average_hsv[1]}, V={average_hsv[2]}")
 
          # Extracting the center, width, and height of the ellipse
          ellipse = cv2.fitEllipse(contour)
          (x_center, y_center), (minor_axis, major_axis), angle = ellipse
-        # Get data fpor the loop if "q" is pressed
-         print(x_center, ", ", y_center, ", ")
+        #  print(x_center, ", ", y_center, ", ")
          
          # Writing the extracted values to the NetworkTables
-         visionTable.putNumber('EllipseCenterX', x_center)
-         visionTable.putNumber('EllipseCenterY', y_center)
-
+         if (contour_is_note(contour)[1] > MAXIMUM_CONTOUR_AREA_FOR_CAMERA_UPPER_HALF and y_center < 75):
+            visionTable.putNumber('EllipseCenterX', -2.0)
+            visionTable.putNumber('EllipseCenterY', -2.0)    
+         else:
+            visionTable.putNumber('EllipseCenterX', x_center)
+            visionTable.putNumber('EllipseCenterY', y_center)
         
 
+        
+      #view result on wpilibpi.local/1182
       output_stream.putFrame(output_img)
 
 
