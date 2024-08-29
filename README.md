@@ -1,5 +1,4 @@
-# Note-Object-Detection-OpenCV-Rasp-Pi-Code
-Note Detection
+# Note Detection Code 4829
 
 Uses our custom made [note detection](https://github.com/TitaniumTigers4829/camera-note-detection) code, with enhancements to interact with WPILib/networktables with a raspberry pi.
 
